@@ -26,20 +26,20 @@ public class LinkController {
 
     /**
      * Handles the request to shorten a given URL. This method receives a POST request with the original URL
-     * in the request body, shortens the URL using the {@link LinkShortner} service, and returns the
-     * shortened URL in a structured response.
+     * in the request body in the request object, shortens the URL using the {@link LinkShortner} service, and
+     * returns the shortened URL in a structured response.
      *
-     * @param originalUrl Original URL to be shortened, provided in the request body
+     * @param request {@link LinkCreationRequest} object containing the original URL to be shortened
      * @return {@link ResponseEntity} containing the {@link LinkCreationResponse} with the original and shortened URLs,
      *         along with a status of {@code 201 Created}
      * @throws IllegalArgumentException if the provided URL is null or empty
      */
     @PostMapping
-    public ResponseEntity<LinkCreationResponse> shortenLink(@RequestBody String originalUrl) {
-        System.out.println("Shorten link creation request: " + originalUrl);
-        String shortenedUrl = linkShortner.shortenLink(originalUrl);
+    public ResponseEntity<LinkCreationResponse> shortenLink(@RequestBody LinkCreationRequest request) {
+        System.out.println("Shorten link creation request: " + request.originalUrl());
+        String shortenedUrl = linkShortner.shortenLink(request.originalUrl());
         System.out.println("Shortened URL: " + shortenedUrl);
-        LinkCreationResponse response = new LinkCreationResponse(originalUrl, shortenedUrl);
+        LinkCreationResponse response = new LinkCreationResponse(request.originalUrl(), shortenedUrl);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -53,9 +53,8 @@ public class LinkController {
      */
     @GetMapping("/{shortenedUrl}")
     public ResponseEntity<Void> getLink(@PathVariable String shortenedUrl) {
-        System.out.println("Shorten link retrieval request.");
+        System.out.println("Shorten link retrieval request: " + shortenedUrl);
         String fullUrl = linkShortner.getFullUrl(shortenedUrl);
-        fullUrl = fullUrl.trim().replaceAll("^\"|\"$", "");  // Remove leading/trailing quotes
         System.out.println(fullUrl);
         return ResponseEntity.status(HttpStatus.FOUND)  // 302 status for redirect
                 .location(URI.create(fullUrl))  // Redirect to the original URL
